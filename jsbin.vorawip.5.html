@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2020 by SiqiHuang18 (http://jsbin.com/vorawip/5/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+<meta name="description" content="Capstone data">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Capstone</title>
+<style id="jsbin-css">
+.center {
+  width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+#grid {
+  fill: LightGray;
+  stroke: black;
+
+}
+
+.row{
+}
+
+.square{
+  
+}
+
+
+</style>
+</head>
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<div id="grid" class="center" ></div>
+
+<div id="map" class="center"></div>
+
+  
+<div id="slider" class="center" ></div> 
+
+<script id="jsbin-javascript">
+
+
+
+function makeplot() {
+  Plotly.d3.csv('https://raw.githubusercontent.com/SiqiHuang18/capstone-data/master/actual_week.csv', function(data){ processData(data) } );
+
+};
+
+function processData(allRows) {
+
+ 
+  var x = [], y = []
+
+  for (var i=0; i<10; i++) {
+    console.log(allRows)
+    row = allRows[i];
+    x.push( row['hour'] );
+    y.push( row['region'] );
+  }
+  console.log( 'X',x, 'Y',y);
+  makePlotly( x, y );
+}
+
+function makePlotly( x1, y1){
+  var trace1 = {
+  x: x1,
+  y: [4,4,4,4,4,4,4,4,4,4],
+  type: 'scatter',
+  name: 'actual trace'
+};
+
+var trace2 = {
+  x: x1,
+  y: y1,
+  type: 'scatter',
+  name: 'reconstructed'
+};
+
+var data = [trace1, trace2];
+var layout = {
+  autosize: true,
+  title: 'Traces',
+  height: 500,
+  width: 700,
+}
+
+Plotly.newPlot('grid', data, layout);
+};
+
+
+makeplot();
+///////////////////////////////  map
+var data1 = {
+  type:'scattermapbox',
+  mode: "markers+text+lines",
+  lat:[37.7749,37.800,37.802],
+  lon:[-122.4194,-122.45,-122.42],
+  visible: true,
+  name: 'actual trace',
+  line: {
+  width: 1,
+  color: 'blue'
+  },
+  marker: {
+    size:10
+  },
+  text:['San Francisco']
+}
+
+var data2 = {
+  type:'scattermapbox',
+  mode: "markers+text+lines",
+  lat:[37.7749,37.780,37.75],
+  lon:[-122.4194,-122.4,-122.35],
+  name: 'reconstructed trace',
+  visible: true,
+  line: {
+    width: 1,
+    color: 'red'
+  },
+  marker: {
+    size:10
+  },
+  text:['San Francisco']
+}
+
+var data3 = {
+  type:'scattermapbox',
+  mode: "markers+text+lines",
+  lat:[37.7849,37.820,37.822],
+  lon:[-122.4194,-122.55,-122.52],
+  visible: false,
+  name: 'actual trace',
+  line: {
+  width: 1,
+  color: 'blue'
+  },
+  marker: {
+    size:10
+  },
+  text:['San Francisco']
+}
+
+var data4 = {
+  type:'scattermapbox',
+  mode: "markers+text+lines",
+  lat:[37.7749,37.790,37.78],
+  lon:[-122.4194,-122.45,-122.33],
+  name: 'reconstructed trace',
+  visible: false,
+  line: {
+    width: 1,
+    color: 'red'
+  },
+  marker: {
+    size:10
+  },
+  text:['San Francisco']
+}
+
+var data = [data1,data2,data3,data4];
+
+
+var layout = {
+  autosize: true,
+  title: 'Traces on Map',
+  hovermode:'closest',
+  height: 500,
+  width: 700,
+  mapbox: {
+    bearing:0,
+    center: {
+      lat:37.78,
+      lon:-122.37,
+    },
+    pitch:0,
+    zoom:10
+  },
+  
+  updatemenus:[{
+    y: 0.8,
+    yanchor: 'top',
+    buttons: [
+           
+            {
+            method: 'restyle',
+            args: ['visible', [true, true,false,false]],
+            label: 'Data set 0'
+            }, {
+            method: 'restyle',
+            args: ['visible', [false,false,true,true]],
+            label: 'Data set 1'
+            }]
+  }]
+
+}
+
+
+Plotly.setPlotConfig({
+  mapboxAccessToken: "pk.eyJ1Ijoic2g1Njg4IiwiYSI6ImNrYmxhaGs5dTBjZjYzNHRtYmt1YWRncTEifQ.etbz2k6bLxcK8tu6LC7RHA"
+})
+
+Plotly.newPlot('map', data, layout)
+
+
+////////////////////////     slider
+Plotly.newPlot('slider', {
+  data: [{
+    x: [1, 2, 3],
+    y: [2, 1, 3],
+    line: {
+      color: 'red',
+      simplify: false,
+    }
+  }],
+  layout: {
+    height: 500,
+    width: 700,
+    title: 'Correctness under different parameters',
+    sliders: [{
+      pad: {t: 30},
+      x: 0.05,
+      len: 0.95,
+      currentvalue: {
+        xanchor: 'right',
+        prefix: 'color: ',
+        font: {
+          color: '#888',
+          size: 20
+        }
+      },
+      transition: {duration: 500},
+      // By default, animate commands are bound to the most recently animated frame:
+      steps: [{
+        label: 'red',
+        method: 'animate',
+        args: [['red'], {
+          mode: 'immediate',
+          frame: {redraw: false, duration: 500},
+          transition: {duration: 500}
+        }]
+      }, {
+        label: 'green',
+        method: 'animate',
+        args: [['green'], {
+          mode: 'immediate',
+          frame: {redraw: false, duration: 500},
+          transition: {duration: 500}
+        }]
+      }, {
+        label: 'blue',
+        method: 'animate',
+        args: [['blue'], {
+          mode: 'immediate',
+          frame: {redraw: false, duration: 500},
+          transition: {duration: 500}
+        }]
+      }]
+    }],
+   
+  },
+  // The slider itself does not contain any notion of timing, so animating a slider
+  // must be accomplished through a sequence of frames. Here we'll change the color
+  // and the data of a single trace:
+  frames: [{
+    name: 'red',
+    data: [{
+      y: [2, 1, 3],
+      'line.color': 'red'
+    }]
+  }, {
+    name: 'green',
+    data: [{
+      y: [3, 2, 1],
+      'line.color': 'green'}]
+  }, {
+    name: 'blue',
+    data: [{
+      y: [1, 3, 2],
+      'line.color': 'blue'}]
+  }]
+});
+</script>
+</body>
+</html>
