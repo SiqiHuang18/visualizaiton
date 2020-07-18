@@ -1,306 +1,389 @@
 <!DOCTYPE html>
-<!--
-Created using JS Bin
-http://jsbin.com
-
-Copyright (c) 2020 by SiqiHuang18 (http://jsbin.com/vorawip/5/edit)
-
-Released under the MIT license: http://jsbin.mit-license.org
--->
-<meta name="robots" content="noindex">
 <html>
 <head>
-<meta name="description" content="Capstone data">
+<meta name="description" content="Capstone data_test3_mapbox_beijing">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Capstone</title>
 <style id="jsbin-css">
 .center {
   width: 600px;
-  margin: 0 auto;
+  margin-bottom: 50px;
   padding: 20px;
 }
 
-.grid line {
-  stroke: lightgrey;
-  stroke-opacity: 0.7;
-  shape-rendering: crispEdges;
+
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, Sans-serif;
 }
 
-.grid path {
-  stroke-width: 0;
+
+
+.session {
+  position:absolute;
+  margin-bottom: 30px;
+  width: 400px;
+  padding: 20px;
+  top: 440px;
 }
 
-#grid {
-  fill: LightGray;
-  stroke: black;
-
+.label {
+  width: 15%;
+  display: inline-block;
+  text-align: center;
 }
 
-.row{
+
+#map {
+  position: relative;
+  top: 0px;
+  bottom: 0;
+  height: 500px;
+  width: 100%;
 }
 
-.square{
+#play-button {
+            background: #F14E58;
+            padding-right: 26px;
+            border-radius: 3px;
+            border: none;
+            color: white;
+            margin: 0;
+            padding: 0 12px;
+            width: 60px;
+            cursor: pointer;
+            height: 30px;
+        }
+ #play-button:hover {
+            background-color:          #848480;
+        }
+
+#slider {
+            background-color: transparent;
+            display: inline-block;
+            width: 100%;
+            position: relative;
+            margin: 10px auto;
+            cursor: ew-resize;
+}
+
+#console {
+  position: absolute;
+  width: 180px;
+  height: 100px;
+  margin: 10px;
+  padding-top: 0px;
+  padding: 20px 20px;
+  top:60px;
+  background-color: white;
+}
+
+#legendtitle{
+  text-align: center;
+  bottom: 7px;
+}
+
+h2 {
+  position: relative;
+  text-align: center;
   
 }
 
+h3{
+  position: relative;
+  text-align: center;
+  bottom: 15px;
+}
 
+.row {
+  height: 12px;
+  width: 100%;
+}
+
+.colors {
+  background: [ #2dc4b2, #3bb3c3, #669ec4, #8b88b6, #a2719b, #aa5e79];
+  margin-bottom: 5px;
+}
+
+.label {
+  width: 15%;
+  display: inline-block;
+  text-align: center;
+}
+
+p {  
+  text-align: left;
+  display:inline;
+  position: relative;
+  bottom: 20px;
+}
+
+
+.dot {
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  bottom: 11px;
+}
+
+.actual { 
+    background-color:#AA5E79;
+}
+
+.reconstructed { 
+    background-color:#FF7F50;
+}
+
+
+.filter-ctrl {
+position: relative;
+top: 200px;
+left: 10px;
+z-index: 1;
+}
+ 
+.filter-ctrl input[type='text'] {
+font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+width: 100%;
+border: 0;
+background-color: #fff;
+margin: 0;
+color: rgba(0, 0, 0, 0.5);
+padding: 10px;
+box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+border-radius: 3px;
+width: 180px; 
+}
 </style>
 </head>
 <body>
-<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="http://d3js.org/d3.v5.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-<div id="grid" class="center" ></div>
-
-<div id="map" class="center"></div>
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js"></script>
+  
 
   
-<div id="slider" class="center" ></div> 
+<header>
+  <h2>Beijing Trajectories in a Day</h2>
+</header>  
+
+
+
+<div id="map" class="center">
+  <div id='console'>
+  <h3 class='legendtitle'>Beijing Traces </h3>
+   
+      <span class="dot actual"></span>
+      <p >Actual trace</p> 
+      <br><span class="dot reconstructed"></span>
+      <p >Reconstructed trace</p>
+  
+  </div>
+  
+  <div class="filter-ctrl">
+<input
+id="filter-input"
+type="text"
+name="filter"
+placeholder="select user id from 1 to 10"
+/>
+</div>
+  <div class='session' id='sliderbar'>
+  <h2>Hour: <label id='active-hour'>1</label></h2>
+ 
+ <input id='slider' class='row' type='range' min='1' max='24' step='1' value='0', cursor: ew-resize/> 
+  <button id="play-button">Play</button>
+</div>
+  
+</div>
+
+  
+
+  
+  
+
 
 <script id="jsbin-javascript">
+/// extract year array
+/// traces for each sampling level 1 for now
+/// lookup by time stamp
+/// Create a frame for each year
+/// create slider step for each frame
 
 
-
-function makeplot() {
-  Plotly.d3.csv('https://raw.githubusercontent.com/SiqiHuang18/capstone-data/master/actual_week.csv', function(data){ processData(data) } );
-
-};
-
-function processData(allRows) {
-
- 
-  var x = [], y = []
-
-  for (var i=0; i<10; i++) {
-    console.log(allRows)
-    row = allRows[i];
-    x.push( row['hour'] );
-    y.push( row['region'] );
-  }
-  console.log( 'X',x, 'Y',y);
-  makePlotly( x, y );
-}
-
-function makePlotly( x1, y1){
-  var trace1 = {
-  x: x1,
-  y: [4,4,4,4,4,4,4,4,4,4],
-  type: 'scatter',
-  name: 'actual trace'
-};
-
-var trace2 = {
-  x: x1,
-  y: y1,
-  type: 'scatter',
-  name: 'reconstructed'
-};
-
-var data = [trace1, trace2];
-var layout = {
-  autosize: true,
-  title: 'Traces',
-  height: 500,
-  width: 700,
-}
-
-Plotly.newPlot('grid', data, layout);
-};
-
-
-makeplot();
 ///////////////////////////////  map
-var data1 = {
-  type:'scattermapbox',
-  mode: "markers+text+lines",
-  lat:[37.7749,37.800,37.802],
-  lon:[-122.4194,-122.45,-122.42],
-  visible: true,
-  name: 'actual trace',
-  line: {
-  width: 1,
-  color: 'blue'
-  },
-  marker: {
-    size:10
-  },
-  text:['San Francisco']
-}
-
-var data2 = {
-  type:'scattermapbox',
-  mode: "markers+text+lines",
-  lat:[37.7749,37.780,37.75],
-  lon:[-122.4194,-122.4,-122.35],
-  name: 'reconstructed trace',
-  visible: true,
-  line: {
-    width: 1,
-    color: 'red'
-  },
-  marker: {
-    size:10
-  },
-  text:['San Francisco']
-}
-
-var data3 = {
-  type:'scattermapbox',
-  mode: "markers+text+lines",
-  lat:[37.7849,37.820,37.822],
-  lon:[-122.4194,-122.55,-122.52],
-  visible: false,
-  name: 'actual trace',
-  line: {
-  width: 1,
-  color: 'blue'
-  },
-  marker: {
-    size:10
-  },
-  text:['San Francisco']
-}
-
-var data4 = {
-  type:'scattermapbox',
-  mode: "markers+text+lines",
-  lat:[37.7749,37.790,37.78],
-  lon:[-122.4194,-122.45,-122.33],
-  name: 'reconstructed trace',
-  visible: false,
-  line: {
-    width: 1,
-    color: 'red'
-  },
-  marker: {
-    size:10
-  },
-  text:['San Francisco']
-}
-
-var data = [data1,data2,data3,data4];
-
-
-var layout = {
-  autosize: true,
-  title: 'Traces on Map',
-  hovermode:'closest',
-  height: 500,
-  width: 700,
-  mapbox: {
-    bearing:0,
-    center: {
-      lat:37.78,
-      lon:-122.37,
-    },
-    pitch:0,
-    zoom:10
-  },
+mapboxgl.accessToken =   "pk.eyJ1Ijoic2g1Njg4IiwiYSI6ImNrYmxhaGs5dTBjZjYzNHRtYmt1YWRncTEifQ.etbz2k6bLxcK8tu6LC7RHA"
   
-  updatemenus:[{
-    y: 0.8,
-    yanchor: 'top',
-    buttons: [
-           
-            {
-            method: 'restyle',
-            args: ['visible', [true, true,false,false]],
-            label: 'Data set 0'
-            }, {
-            method: 'restyle',
-            args: ['visible', [false,false,true,true]],
-            label: 'Data set 1'
-            }]
-  }]
-
-}
-
-
-Plotly.setPlotConfig({
-  mapboxAccessToken: "pk.eyJ1Ijoic2g1Njg4IiwiYSI6ImNrYmxhaGs5dTBjZjYzNHRtYmt1YWRncTEifQ.etbz2k6bLxcK8tu6LC7RHA"
-})
-
-Plotly.newPlot('map', data, layout)
-
-
-////////////////////////     slider
-Plotly.newPlot('slider', {
-  data: [{
-    x: [1, 2, 3],
-    y: [2, 1, 3],
-    line: {
-      color: 'red',
-      simplify: false,
-    }
-  }],
-  layout: {
-    height: 500,
-    width: 700,
-    title: 'Correctness under different parameters',
-    sliders: [{
-      pad: {t: 30},
-      x: 0.05,
-      len: 0.95,
-      currentvalue: {
-        xanchor: 'right',
-        prefix: 'color: ',
-        font: {
-          color: '#888',
-          size: 20
-        }
-      },
-      transition: {duration: 500},
-      // By default, animate commands are bound to the most recently animated frame:
-      steps: [{
-        label: 'red',
-        method: 'animate',
-        args: [['red'], {
-          mode: 'immediate',
-          frame: {redraw: false, duration: 500},
-          transition: {duration: 500}
-        }]
-      }, {
-        label: 'green',
-        method: 'animate',
-        args: [['green'], {
-          mode: 'immediate',
-          frame: {redraw: false, duration: 500},
-          transition: {duration: 500}
-        }]
-      }, {
-        label: 'blue',
-        method: 'animate',
-        args: [['blue'], {
-          mode: 'immediate',
-          frame: {redraw: false, duration: 500},
-          transition: {duration: 500}
-        }]
-      }]
-    }],
-   
-  },
-  // The slider itself does not contain any notion of timing, so animating a slider
-  // must be accomplished through a sequence of frames. Here we'll change the color
-  // and the data of a single trace:
-  frames: [{
-    name: 'red',
-    data: [{
-      y: [2, 1, 3],
-      'line.color': 'red'
-    }]
-  }, {
-    name: 'green',
-    data: [{
-      y: [3, 2, 1],
-      'line.color': 'green'}]
-  }, {
-    name: 'blue',
-    data: [{
-      y: [1, 3, 2],
-      'line.color': 'blue'}]
-  }]
+var map = new mapboxgl.Map({
+  container: 'map', // container element id
+  style: 'mapbox://styles/mapbox/light-v10',
+  center: [116.4, 39.9], // initial map center in [lon, lat]
+  zoom: 8
 });
+  
+var filterInput = document.getElementById('filter-input');
+
+  
+  
+map.on('load', function() {
+  
+  map.addSource('region', {
+            type: 'geojson',
+            data:  'https://raw.githubusercontent.com/SiqiHuang18/capstone-data/master/Beijing_81_FeaturesToJSON.geojson',
+
+  });
+  
+var uid = 1
+var hour = 0
+
+
+  map.addLayer({
+    id: 'region',
+    source: 'region',
+    type: 'fill',
+    paint: {
+      'fill-opacity': 0.5,
+      'fill-outline-color': '#444',
+      'fill-color':'#007bff',
+     },
+
+  }); 
+  
+  
+  
+               
+  
+   map.addLayer({
+  id: 'actual trace',
+  type: 'circle',
+  source: {
+    type: 'geojson',
+    data: 'https://raw.githubusercontent.com/SiqiHuang18/capstone-data/master/plot_actual_beijing.geojson' // replace this with the url of your own geojson
+    },
+    paint: { 
+    'circle-color':  '#AA5E79',
+    'circle-radius': 6,
+    'circle-opacity': 1
+   },
+   filter:  ['==', ['number', ['get', 'uid']], uid] 
+   })
+   
+  map.addLayer({
+  id: 'reconstructed trace',
+  type: 'circle',
+  source: {
+    type: 'geojson',
+    data: 'https://raw.githubusercontent.com/SiqiHuang18/capstone-data/master/recon80_Beijing.geojson' // replace this with the url of your own geojson
+    },
+    paint: { 
+    'circle-color':  '#FF7F50',
+    'circle-radius': 10,
+    'circle-opacity': 0.7
+   },
+   filter:  ['==', ['number', ['get', 'uid']], uid] 
+   })
+   
+  
+  
+  function filterBy_id(uid){
+     map.setFilter('actual trace', 
+                ["all",
+                 ['==', ['number', ['get', 'uid']], uid]
+                ])
+     map.setFilter('reconstructed trace', 
+                ["all",
+                 ['==', ['number', ['get', 'uid']], uid],]
+                 );
+   }
+   
+  function filterBy(hour,uid){
+    map.setFilter('actual trace', 
+                ["all",
+                 ['==', ['number', ['get', 'uid']], uid],
+                 ['==', ['number', ['get', 'time']], hour]]
+               );
+    map.setFilter('reconstructed trace', 
+                ["all",
+                 ['==', ['number', ['get', 'uid']], uid],
+                 ['==', ['number', ['get', 'time']], hour]]
+               );
+  // update text in the UI
+  document.getElementById('active-hour').innerText = hour;
+  }
+  
+  
+filterInput.addEventListener('keyup', function(e) {
+// If the input value matches a layerID set
+// it's visibility to 'visible' or else hide it.
+uid = parseInt(e.target.value);
+map.setFilter('actual trace');
+map.setFilter('reconstructed trace'); 
+filterBy_id(uid)
+
+})
+   
+
+document.getElementById('slider').addEventListener('input', function(e) {
+  hour = parseInt(e.target.value);
+  filterBy(hour,uid);
+});
+  
+ var playButton = d3.select("#play-button"); 
+ var moving = false;
+
+var currenthour = 1;
+  
+ playButton.on("click", function () {
+var button = d3.select(this);
+
+if (button.text() == "Pause") {
+    moving = false;
+    clearInterval(timer);
+    // timer = 0;
+    button.text("Play");
+} else {
+    moving = true;
+    timer = setInterval(step, 400);
+    button.text("Pause");
+}
+console.log("Slider moving: " + moving);
+                    });
+ 
+ 
+ function step(){
+   if (currenthour < 24){
+     filterBy(currenthour,uid);
+     currenthour += 1; 
+     document.getElementById('slider').value = currenthour;
+   }
+   if (currenthour == 24){
+     
+     
+     moving = false
+    
+     filterBy(currenthour,uid);
+  
+     
+     document.getElementById('slider').value = currenthour;
+     currenthour = 1
+     clearInterval(timer);
+     
+  }
+
+ } 
+ 
+  
+  
+  
+})
 </script>
+
 </body>
 </html>
